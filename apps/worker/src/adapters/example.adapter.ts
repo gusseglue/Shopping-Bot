@@ -1,3 +1,4 @@
+import * as cheerio from 'cheerio'
 import { BaseAdapter, AdapterResult } from './base.adapter'
 
 /**

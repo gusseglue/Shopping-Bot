@@ -11,8 +11,7 @@ import { Plan, WatcherStatus } from '@prisma/client'
 
 describe('WatchersService', () => {
   let service: WatchersService
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  let prismaService: any
+  let prismaService: jest.Mocked<PrismaService>
 
   const mockUser = {
     id: 'user-123',
