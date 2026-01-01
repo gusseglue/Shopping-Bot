@@ -95,15 +95,7 @@ export class WatcherProcessor {
 
       // Parse the page using appropriate adapter
       const adapter = this.getAdapter(watcher.domain)
-      const html = fetchResult.html ?? ''
-      
-      // Skip parsing if we got a 304 Not Modified (empty html)
-      if (!html) {
-        await this.throttleManager.recordSuccess(watcher.domain)
-        return { success: true, alerts: [], data: {} }
-      }
-      
-      const parseResult = adapter.parse(html, watcher.url)
+      const parseResult = adapter.parse(fetchResult.html!, watcher.url)
 
       if (!parseResult.success) {
         await this.throttleManager.recordError(watcher.domain)

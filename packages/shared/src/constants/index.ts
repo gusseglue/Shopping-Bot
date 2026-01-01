@@ -233,22 +233,9 @@ export const AUDIT_ACTIONS = [
 
 /**
  * Environment-specific constants
- * Note: These are safe for server-side code only
- * For browser code, use build-time environment variables
  */
-export const getEnv = () => {
-  // Only access process.env on the server
-  if (typeof window === 'undefined') {
-    return {
-      isDevelopment: process.env.NODE_ENV === 'development',
-      isProduction: process.env.NODE_ENV === 'production',
-      isTest: process.env.NODE_ENV === 'test',
-    }
-  }
-  // Browser: default to production for safety
-  return {
-    isDevelopment: false,
-    isProduction: true,
-    isTest: false,
-  }
+export const ENV = {
+  isDevelopment: process.env.NODE_ENV === 'development',
+  isProduction: process.env.NODE_ENV === 'production',
+  isTest: process.env.NODE_ENV === 'test',
 }

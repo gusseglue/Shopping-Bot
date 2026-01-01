@@ -26,7 +26,6 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog'
 import { useToast } from '@/components/ui/use-toast'
-import { api } from '@/lib/api'
 
 interface Watcher {
   id: string
@@ -75,10 +74,16 @@ export default function WatchersPage() {
 
   const fetchWatchers = async () => {
     try {
-      const response = await api.getWatchers()
+      const token = localStorage.getItem('accessToken')
+      const response = await fetch('/api/watchers', {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
 
-      if (response.data) {
-        setWatchers(response.data.items || [])
+      if (response.ok) {
+        const data = await response.json()
+        setWatchers(data.items || [])
       }
     } catch (error) {
       console.error('Failed to fetch watchers:', error)
@@ -91,20 +96,30 @@ export default function WatchersPage() {
     setIsSubmitting(true)
 
     try {
-      const response = await api.createWatcher({
-        url: data.url,
-        name: data.name,
-        interval: data.interval,
-        rules: {
-          stockStatus: data.stockStatus,
-          ...(data.priceThreshold && {
-            priceThreshold: { type: 'below', value: data.priceThreshold },
-          }),
+      const token = localStorage.getItem('accessToken')
+      const response = await fetch('/api/watchers', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
         },
+        body: JSON.stringify({
+          url: data.url,
+          name: data.name,
+          interval: data.interval,
+          rules: {
+            stockStatus: data.stockStatus,
+            ...(data.priceThreshold && {
+              priceThreshold: { type: 'below', value: data.priceThreshold },
+            }),
+          },
+        }),
       })
 
-      if (response.error) {
-        throw new Error(response.error)
+      const result = await response.json()
+
+      if (!response.ok) {
+        throw new Error(result.message || 'Failed to create watcher')
       }
 
       toast({
@@ -129,11 +144,15 @@ export default function WatchersPage() {
 
   const toggleWatcher = async (id: string, action: 'pause' | 'resume') => {
     try {
-      const response = action === 'pause' 
-        ? await api.pauseWatcher(id)
-        : await api.resumeWatcher(id)
+      const token = localStorage.getItem('accessToken')
+      const response = await fetch(`/api/watchers/${id}/${action}`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
 
-      if (response.data) {
+      if (response.ok) {
         toast({
           title: action === 'pause' ? 'Watcher paused' : 'Watcher resumed',
         })
@@ -151,9 +170,15 @@ export default function WatchersPage() {
     if (!confirm('Are you sure you want to delete this watcher?')) return
 
     try {
-      const response = await api.deleteWatcher(id)
+      const token = localStorage.getItem('accessToken')
+      const response = await fetch(`/api/watchers/${id}`, {
+        method: 'DELETE',
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
 
-      if (response.data?.success) {
+      if (response.ok) {
         toast({
           title: 'Watcher deleted',
         })
