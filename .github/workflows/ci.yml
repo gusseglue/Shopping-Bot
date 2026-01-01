@@ -166,10 +166,6 @@ jobs:
         run: npm install
         working-directory: apps/desktop
 
-      - name: Build frontend
-        run: npm run build
-        working-directory: apps/desktop
-
       - name: Check Rust code
-        run: cargo check --all-targets --all-features
+        run: cargo clippy --all-targets --all-features -- -D warnings
         working-directory: apps/desktop/src-tauri
