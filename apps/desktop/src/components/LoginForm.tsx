@@ -92,7 +92,7 @@ export default function LoginForm({ onLogin }: LoginFormProps) {
         <p className="mt-6 text-center text-sm text-gray-400">
           Don&apos;t have an account?{' '}
           <a
-            href="https://example.com/signup"
+            href={`${import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:3000'}/signup`}
             target="_blank"
             rel="noopener noreferrer"
             className="text-blue-400 hover:underline"

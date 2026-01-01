@@ -96,7 +96,7 @@ export function isDomainAllowed(url: string, allowedDomains: string[]): boolean 
 export function createThrottle<T extends (...args: unknown[]) => unknown>(
   fn: T,
   delayMs: number
-): T {
+): (...args: Parameters<T>) => Promise<ReturnType<T>> {
   let lastCall = 0
   let timeoutId: ReturnType<typeof setTimeout> | null = null
 
@@ -110,16 +110,16 @@ export function createThrottle<T extends (...args: unknown[]) => unknown>(
 
     if (timeSinceLastCall >= delayMs) {
       lastCall = now
-      return fn(...args)
+      return Promise.resolve(fn(...args) as ReturnType<T>)
     }
 
     return new Promise((resolve) => {
       timeoutId = setTimeout(() => {
         lastCall = Date.now()
-        resolve(fn(...args))
+        resolve(fn(...args) as ReturnType<T>)
       }, delayMs - timeSinceLastCall)
     })
-  }) as T
+  })
 }
 
 /**
