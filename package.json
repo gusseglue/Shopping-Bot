@@ -1,0 +1,22 @@
+{
+  "name": "shopping-assistant",
+  "version": "1.0.0",
+  "description": "A product monitoring and alerting platform that helps users track product availability, prices, and variants across online stores",
+  "private": true,
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
+  "scripts": {
+    "build": "npm run build --workspaces --if-present",
+    "dev": "npm run dev --workspaces --if-present",
+    "lint": "npm run lint --workspaces --if-present",
+    "test": "npm run test --workspaces --if-present",
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "install:all": "npm install"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "license": "MIT"
+}
