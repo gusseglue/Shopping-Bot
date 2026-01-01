@@ -66,8 +66,8 @@ The software respects `robots.txt` and implements polite monitoring with per-dom
 
 1. **Clone the repository**
 ```bash
-git clone https://github.com/gusseglue/shopping-assistant.git
-cd shopping-assistant
+git clone https://github.com/gusseglue/Shopping-Bot.git
+cd Shopping-Bot
 ```
 
 2. **Install dependencies**
