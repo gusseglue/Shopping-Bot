@@ -10,8 +10,8 @@ import { Plan, SubscriptionStatus, Role } from '@prisma/client'
 
 describe('AuthService', () => {
   let service: AuthService
-  let prismaService: jest.Mocked<PrismaService>
-  let jwtService: jest.Mocked<JwtService>
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let prismaService: any
 
   const mockUser = {
     id: 'user-123',
@@ -79,7 +79,6 @@ describe('AuthService', () => {
 
     service = module.get<AuthService>(AuthService)
     prismaService = module.get(PrismaService)
-    jwtService = module.get(JwtService)
   })
 
   describe('register', () => {

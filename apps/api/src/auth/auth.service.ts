@@ -330,7 +330,7 @@ export class AuthService {
       data: {
         userId,
         action,
-        metadata,
+        metadata: metadata as object,
         ipAddress,
         userAgent,
       },

@@ -40,7 +40,7 @@ export class GenericAdapter extends BaseAdapter {
       result.title = this.extractTitle($)
 
       // Extract price
-      const priceData = this.extractPrice($)
+      const priceData = this.findPriceElement($)
       if (priceData) {
         result.price = priceData.price
         result.currency = priceData.currency
@@ -139,7 +139,7 @@ export class GenericAdapter extends BaseAdapter {
   /**
    * Extract price from various sources
    */
-  private extractPrice($: cheerio.CheerioAPI): { price: number; currency: string } | null {
+  private findPriceElement($: cheerio.CheerioAPI): { price: number; currency: string } | null {
     // Try common price selectors
     const selectors = [
       '[data-testid="price"]',

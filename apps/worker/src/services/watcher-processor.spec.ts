@@ -1,31 +1,24 @@
 import { WatcherProcessor } from './watcher-processor'
 import { ThrottleManager } from './throttle-manager'
-import { PrismaClient, WatcherStatus, AlertType } from '@prisma/client'
 import { Logger } from 'pino'
+
+// Define WatcherStatus locally since we're mocking
+const WatcherStatus = {
+  ACTIVE: 'ACTIVE',
+  PAUSED: 'PAUSED',
+  ERROR: 'ERROR',
+} as const
 
 // Mock dependencies
 jest.mock('./throttle-manager')
-jest.mock('@prisma/client', () => ({
-  PrismaClient: jest.fn(),
-  WatcherStatus: {
-    ACTIVE: 'ACTIVE',
-    PAUSED: 'PAUSED',
-    ERROR: 'ERROR',
-  },
-  AlertType: {
-    PRICE_CHANGE: 'PRICE_CHANGE',
-    BACK_IN_STOCK: 'BACK_IN_STOCK',
-    SIZE_AVAILABLE: 'SIZE_AVAILABLE',
-    CUSTOM: 'CUSTOM',
-  },
-}))
 
 // Mock global fetch
 global.fetch = jest.fn()
 
 describe('WatcherProcessor - Rule Triggers', () => {
   let processor: WatcherProcessor
-  let mockPrisma: jest.Mocked<PrismaClient>
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let mockPrisma: any
   let mockThrottleManager: jest.Mocked<ThrottleManager>
   let mockLogger: jest.Mocked<Logger>
 
@@ -66,7 +59,7 @@ describe('WatcherProcessor - Rule Triggers', () => {
       alert: {
         create: jest.fn(),
       },
-    } as unknown as jest.Mocked<PrismaClient>
+    }
 
     mockThrottleManager = {
       waitForSlot: jest.fn().mockResolvedValue(undefined),
@@ -362,7 +355,7 @@ describe('WatcherProcessor - Rule Triggers', () => {
       })
       mockPrisma.watcher.update.mockResolvedValueOnce(mockWatcher as any)
 
-      const result = await processor.process('watcher-123')
+      await processor.process('watcher-123')
 
       // 304 means no changes, but still success
       expect(mockThrottleManager.recordSuccess).toHaveBeenCalled()

@@ -12,8 +12,10 @@ jest.mock('stripe')
 
 describe('BillingService', () => {
   let service: BillingService
-  let prismaService: jest.Mocked<PrismaService>
-  let mockStripe: jest.Mocked<Stripe>
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let prismaService: any
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let mockStripe: any
 
   const mockUser = {
     id: 'user-123',
