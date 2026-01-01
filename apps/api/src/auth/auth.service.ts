@@ -15,7 +15,6 @@ import {
   LoginDto,
   RefreshTokenDto,
   RegisterDeviceDto,
-  DevicePlatformDto,
 } from './dto'
 import { Plan, SubscriptionStatus, DevicePlatform } from '@prisma/client'
 
