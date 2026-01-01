@@ -176,7 +176,7 @@ export class BillingService {
 
     // Determine plan from price ID
     const priceId = subscription.items.data[0]?.price.id
-    let plan = Plan.FREE
+    let plan: Plan = Plan.FREE
     if (priceId === PLAN_PRICE_IDS.basic) plan = Plan.BASIC
     else if (priceId === PLAN_PRICE_IDS.pro) plan = Plan.PRO
 

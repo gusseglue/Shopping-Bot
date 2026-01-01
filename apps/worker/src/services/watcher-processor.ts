@@ -1,6 +1,5 @@
 import { PrismaClient, AlertType, WatcherStatus } from '@prisma/client'
 import { Logger } from 'pino'
-import * as cheerio from 'cheerio'
 import { ThrottleManager } from './throttle-manager'
 import { BaseAdapter, AdapterResult } from '../adapters/base.adapter'
 import { ExampleAdapter } from '../adapters/example.adapter'
@@ -155,7 +154,7 @@ export class WatcherProcessor {
    */
   private async fetchPage(
     url: string,
-    domain: string
+    _domain: string
   ): Promise<{ success: boolean; html?: string; error?: string }> {
     try {
       const headers: Record<string, string> = {
