@@ -149,7 +149,25 @@ cd apps/worker && npm run test
 cd apps/web && npm run test
 ```
 
-## Deployment
+## Documentation
+
+### For Server Owners/Administrators
+
+See [Server Setup Guide](./docs/SERVER_SETUP.md) for complete instructions on:
+- Installing prerequisites on Windows and Linux
+- Setting up infrastructure (Docker, PostgreSQL, Redis)
+- Configuring and running the API, Worker, and Web services
+- Production deployment and security
+
+### For End Users
+
+See [User Guide](./docs/USER_GUIDE.md) for help with:
+- Installing the desktop app on Windows and Linux
+- Creating an account and managing watchers
+- Setting up Discord notifications
+- Troubleshooting common issues
+
+### Deployment
 
 See [deployment documentation](./docs/deployment.md) for production deployment guides:
 - Docker Compose (self-hosted)
