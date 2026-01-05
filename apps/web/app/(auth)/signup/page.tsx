@@ -1,12 +1,12 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { Bell, Loader2 } from 'lucide-react'
+import { Bell, Loader2, Fingerprint } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -20,6 +20,7 @@ import {
   CardTitle,
 } from '@/components/ui/card'
 import { useToast } from '@/components/ui/use-toast'
+import { isWebAuthnSupported, registerWithPasskey } from '@/lib/webauthn'
 
 const signupSchema = z
   .object({
@@ -39,14 +40,25 @@ export default function SignupPage() {
   const router = useRouter()
   const { toast } = useToast()
   const [isLoading, setIsLoading] = useState(false)
+  const [isPasskeyLoading, setIsPasskeyLoading] = useState(false)
+  const [webAuthnSupported, setWebAuthnSupported] = useState(false)
+  const [showPasskeyForm, setShowPasskeyForm] = useState(false)
+
+  useEffect(() => {
+    setWebAuthnSupported(isWebAuthnSupported())
+  }, [])
 
   const {
     register,
     handleSubmit,
+    watch,
     formState: { errors },
   } = useForm<SignupForm>({
     resolver: zodResolver(signupSchema),
   })
+
+  const nameValue = watch('name')
+  const emailValue = watch('email')
 
   const onSubmit = async (data: SignupForm) => {
     setIsLoading(true)
@@ -91,6 +103,44 @@ export default function SignupPage() {
     }
   }
 
+  const handlePasskeySignup = async () => {
+    if (!emailValue || !emailValue.includes('@')) {
+      toast({
+        title: 'Email required',
+        description: 'Please enter your email address to register with a passkey.',
+        variant: 'destructive',
+      })
+      return
+    }
+
+    setIsPasskeyLoading(true)
+
+    try {
+      const result = await registerWithPasskey(emailValue, nameValue, 'Default Passkey')
+
+      // Store tokens
+      localStorage.setItem('accessToken', result.accessToken)
+      localStorage.setItem('refreshToken', result.refreshToken)
+      localStorage.setItem('user', JSON.stringify(result.user))
+
+      toast({
+        title: 'Account created!',
+        description: 'Welcome to Shopping Assistant. Your passkey has been registered.',
+      })
+
+      router.push('/dashboard')
+    } catch (error) {
+      toast({
+        title: 'Passkey registration failed',
+        description:
+          error instanceof Error ? error.message : 'Unable to register with passkey',
+        variant: 'destructive',
+      })
+    } finally {
+      setIsPasskeyLoading(false)
+    }
+  }
+
   return (
     <div className="flex min-h-screen items-center justify-center p-4">
       <Card className="w-full max-w-md">
@@ -130,40 +180,97 @@ export default function SignupPage() {
                 <p className="text-sm text-destructive">{errors.email.message}</p>
               )}
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
-              <Input
-                id="password"
-                type="password"
-                placeholder="••••••••"
-                {...register('password')}
-              />
-              {errors.password && (
-                <p className="text-sm text-destructive">
-                  {errors.password.message}
-                </p>
-              )}
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="confirmPassword">Confirm Password</Label>
-              <Input
-                id="confirmPassword"
-                type="password"
-                placeholder="••••••••"
-                {...register('confirmPassword')}
-              />
-              {errors.confirmPassword && (
-                <p className="text-sm text-destructive">
-                  {errors.confirmPassword.message}
-                </p>
-              )}
-            </div>
+            {!showPasskeyForm && (
+              <>
+                <div className="space-y-2">
+                  <Label htmlFor="password">Password</Label>
+                  <Input
+                    id="password"
+                    type="password"
+                    placeholder="••••••••"
+                    {...register('password')}
+                  />
+                  {errors.password && (
+                    <p className="text-sm text-destructive">
+                      {errors.password.message}
+                    </p>
+                  )}
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="confirmPassword">Confirm Password</Label>
+                  <Input
+                    id="confirmPassword"
+                    type="password"
+                    placeholder="••••••••"
+                    {...register('confirmPassword')}
+                  />
+                  {errors.confirmPassword && (
+                    <p className="text-sm text-destructive">
+                      {errors.confirmPassword.message}
+                    </p>
+                  )}
+                </div>
+              </>
+            )}
           </CardContent>
           <CardFooter className="flex flex-col gap-4">
-            <Button type="submit" className="w-full" disabled={isLoading}>
-              {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              Create Account
-            </Button>
+            {!showPasskeyForm ? (
+              <>
+                <Button type="submit" className="w-full" disabled={isLoading || isPasskeyLoading}>
+                  {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                  Create Account
+                </Button>
+                {webAuthnSupported && (
+                  <>
+                    <div className="relative w-full">
+                      <div className="absolute inset-0 flex items-center">
+                        <span className="w-full border-t" />
+                      </div>
+                      <div className="relative flex justify-center text-xs uppercase">
+                        <span className="bg-background px-2 text-muted-foreground">
+                          Or register with
+                        </span>
+                      </div>
+                    </div>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="w-full"
+                      onClick={() => setShowPasskeyForm(true)}
+                      disabled={isLoading || isPasskeyLoading}
+                    >
+                      <Fingerprint className="mr-2 h-4 w-4" />
+                      Register with Passkey
+                    </Button>
+                  </>
+                )}
+              </>
+            ) : (
+              <>
+                <Button
+                  type="button"
+                  className="w-full"
+                  onClick={handlePasskeySignup}
+                  disabled={isLoading || isPasskeyLoading}
+                >
+                  {isPasskeyLoading ? (
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  ) : (
+                    <Fingerprint className="mr-2 h-4 w-4" />
+                  )}
+                  Create Account with Passkey
+                </Button>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  className="w-full"
+                  onClick={() => setShowPasskeyForm(false)}
+                  disabled={isLoading || isPasskeyLoading}
+                >
+                  Use password instead
+                </Button>
+              </>
+            )}
             <p className="text-center text-sm text-muted-foreground">
               Already have an account?{' '}
               <Link

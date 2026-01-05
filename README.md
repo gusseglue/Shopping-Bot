@@ -177,8 +177,8 @@ See [deployment documentation](./docs/deployment.md) for production deployment g
 
 ## Next Steps (v2 Roadmap)
 
-- [ ] Passkeys/WebAuthn authentication
-- [ ] Code-signed desktop builds
+- [x] Passkeys/WebAuthn authentication
+- [x] Code-signed desktop builds
 - [ ] Mobile app (React Native)
 - [ ] Affiliate integration
 - [ ] Browser extension

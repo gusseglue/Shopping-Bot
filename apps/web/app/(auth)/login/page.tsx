@@ -1,12 +1,12 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { Bell, Loader2 } from 'lucide-react'
+import { Bell, Loader2, Fingerprint } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -20,6 +20,7 @@ import {
   CardTitle,
 } from '@/components/ui/card'
 import { useToast } from '@/components/ui/use-toast'
+import { isWebAuthnSupported, loginWithPasskey } from '@/lib/webauthn'
 
 const loginSchema = z.object({
   email: z.string().email('Please enter a valid email'),
@@ -32,14 +33,23 @@ export default function LoginPage() {
   const router = useRouter()
   const { toast } = useToast()
   const [isLoading, setIsLoading] = useState(false)
+  const [isPasskeyLoading, setIsPasskeyLoading] = useState(false)
+  const [webAuthnSupported, setWebAuthnSupported] = useState(false)
+
+  useEffect(() => {
+    setWebAuthnSupported(isWebAuthnSupported())
+  }, [])
 
   const {
     register,
     handleSubmit,
+    watch,
     formState: { errors },
   } = useForm<LoginForm>({
     resolver: zodResolver(loginSchema),
   })
+
+  const emailValue = watch('email')
 
   const onSubmit = async (data: LoginForm) => {
     setIsLoading(true)
@@ -77,6 +87,44 @@ export default function LoginPage() {
       })
     } finally {
       setIsLoading(false)
+    }
+  }
+
+  const handlePasskeyLogin = async () => {
+    if (!emailValue || !emailValue.includes('@')) {
+      toast({
+        title: 'Email required',
+        description: 'Please enter your email address to login with a passkey.',
+        variant: 'destructive',
+      })
+      return
+    }
+
+    setIsPasskeyLoading(true)
+
+    try {
+      const result = await loginWithPasskey(emailValue)
+
+      // Store tokens
+      localStorage.setItem('accessToken', result.accessToken)
+      localStorage.setItem('refreshToken', result.refreshToken)
+      localStorage.setItem('user', JSON.stringify(result.user))
+
+      toast({
+        title: 'Welcome back!',
+        description: 'You have been logged in with your passkey.',
+      })
+
+      router.push('/dashboard')
+    } catch (error) {
+      toast({
+        title: 'Passkey login failed',
+        description:
+          error instanceof Error ? error.message : 'Unable to authenticate with passkey',
+        variant: 'destructive',
+      })
+    } finally {
+      setIsPasskeyLoading(false)
     }
   }
 
@@ -123,10 +171,38 @@ export default function LoginPage() {
             </div>
           </CardContent>
           <CardFooter className="flex flex-col gap-4">
-            <Button type="submit" className="w-full" disabled={isLoading}>
+            <Button type="submit" className="w-full" disabled={isLoading || isPasskeyLoading}>
               {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Sign In
             </Button>
+            {webAuthnSupported && (
+              <>
+                <div className="relative w-full">
+                  <div className="absolute inset-0 flex items-center">
+                    <span className="w-full border-t" />
+                  </div>
+                  <div className="relative flex justify-center text-xs uppercase">
+                    <span className="bg-background px-2 text-muted-foreground">
+                      Or continue with
+                    </span>
+                  </div>
+                </div>
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="w-full"
+                  onClick={handlePasskeyLogin}
+                  disabled={isLoading || isPasskeyLoading}
+                >
+                  {isPasskeyLoading ? (
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  ) : (
+                    <Fingerprint className="mr-2 h-4 w-4" />
+                  )}
+                  Sign in with Passkey
+                </Button>
+              </>
+            )}
             <p className="text-center text-sm text-muted-foreground">
               Don&apos;t have an account?{' '}
               <Link

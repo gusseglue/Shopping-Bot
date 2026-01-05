@@ -32,6 +32,27 @@ export interface Device {
 
 export type DevicePlatform = 'windows' | 'macos' | 'linux' | 'web'
 
+// Passkey/Authenticator Types
+export interface Passkey {
+  id: string
+  userId: string
+  credentialId: string
+  name: string | null
+  credentialDeviceType: string
+  credentialBackedUp: boolean
+  transports: string[]
+  createdAt: Date
+  lastUsedAt: Date | null
+}
+
+export interface PasskeyInfo {
+  id: string
+  name: string | null
+  credentialDeviceType: string
+  createdAt: Date
+  lastUsedAt: Date | null
+}
+
 // Subscription Types
 export interface Subscription {
   id: string
@@ -151,6 +172,9 @@ export type AuditAction =
   | 'webhook_created'
   | 'webhook_tested'
   | 'admin_action'
+  | 'passkey_added'
+  | 'passkey_deleted'
+  | 'webauthn_register'
 
 // API Response Types
 export interface ApiResponse<T = unknown> {
