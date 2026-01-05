@@ -40,6 +40,30 @@ interface Passkey {
 }
 
 /**
+ * Parse API error response for better error messages
+ */
+async function parseApiError(response: Response, defaultMessage: string): Promise<string> {
+  try {
+    const error = await response.json()
+    return error.message || defaultMessage
+  } catch {
+    if (response.status === 0) {
+      return 'Network error: Unable to connect to the server. Please check your internet connection.'
+    }
+    if (response.status === 408 || response.status === 504) {
+      return 'Request timed out. Please try again.'
+    }
+    if (response.status === 403) {
+      return 'Access denied. You may need to log in again.'
+    }
+    if (response.status >= 500) {
+      return 'Server error. Please try again later.'
+    }
+    return defaultMessage
+  }
+}
+
+/**
  * Check if WebAuthn is supported in this browser
  */
 export function isWebAuthnSupported(): boolean {
@@ -62,15 +86,19 @@ export async function registerWithPasskey(
   passkeyName?: string
 ): Promise<AuthResponse> {
   // 1. Start registration - get challenge from server
-  const startResponse = await fetch(`${API_BASE_URL}/auth/webauthn/register/start`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email, name }),
-  })
+  let startResponse: Response
+  try {
+    startResponse = await fetch(`${API_BASE_URL}/auth/webauthn/register/start`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, name }),
+    })
+  } catch (error) {
+    throw new Error('Network error: Unable to connect to the server. Please check your internet connection.')
+  }
 
   if (!startResponse.ok) {
-    const error = await startResponse.json()
-    throw new Error(error.message || 'Failed to start registration')
+    throw new Error(await parseApiError(startResponse, 'Failed to start registration'))
   }
 
   const startData: WebAuthnStartResponse = await startResponse.json()
@@ -95,19 +123,23 @@ export async function registerWithPasskey(
   }
 
   // 3. Finish registration - send credential to server
-  const finishResponse = await fetch(`${API_BASE_URL}/auth/webauthn/register/finish`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      challengeId: startData.challengeId,
-      credential,
-      passkeyName,
-    }),
-  })
+  let finishResponse: Response
+  try {
+    finishResponse = await fetch(`${API_BASE_URL}/auth/webauthn/register/finish`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        challengeId: startData.challengeId,
+        credential,
+        passkeyName,
+      }),
+    })
+  } catch (error) {
+    throw new Error('Network error: Unable to connect to the server. Please check your internet connection.')
+  }
 
   if (!finishResponse.ok) {
-    const error = await finishResponse.json()
-    throw new Error(error.message || 'Failed to complete registration')
+    throw new Error(await parseApiError(finishResponse, 'Failed to complete registration'))
   }
 
   return finishResponse.json()
@@ -118,15 +150,19 @@ export async function registerWithPasskey(
  */
 export async function loginWithPasskey(email: string): Promise<AuthResponse> {
   // 1. Start authentication - get challenge from server
-  const startResponse = await fetch(`${API_BASE_URL}/auth/webauthn/login/start`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email }),
-  })
+  let startResponse: Response
+  try {
+    startResponse = await fetch(`${API_BASE_URL}/auth/webauthn/login/start`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email }),
+    })
+  } catch (error) {
+    throw new Error('Network error: Unable to connect to the server. Please check your internet connection.')
+  }
 
   if (!startResponse.ok) {
-    const error = await startResponse.json()
-    throw new Error(error.message || 'Failed to start authentication')
+    throw new Error(await parseApiError(startResponse, 'Failed to start authentication'))
   }
 
   const startData: WebAuthnStartResponse = await startResponse.json()
@@ -148,18 +184,22 @@ export async function loginWithPasskey(email: string): Promise<AuthResponse> {
   }
 
   // 3. Finish authentication - send credential to server
-  const finishResponse = await fetch(`${API_BASE_URL}/auth/webauthn/login/finish`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      challengeId: startData.challengeId,
-      credential,
-    }),
-  })
+  let finishResponse: Response
+  try {
+    finishResponse = await fetch(`${API_BASE_URL}/auth/webauthn/login/finish`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        challengeId: startData.challengeId,
+        credential,
+      }),
+    })
+  } catch (error) {
+    throw new Error('Network error: Unable to connect to the server. Please check your internet connection.')
+  }
 
   if (!finishResponse.ok) {
-    const error = await finishResponse.json()
-    throw new Error(error.message || 'Failed to complete authentication')
+    throw new Error(await parseApiError(finishResponse, 'Failed to complete authentication'))
   }
 
   return finishResponse.json()
@@ -173,17 +213,21 @@ export async function addPasskey(
   passkeyName?: string
 ): Promise<Passkey> {
   // 1. Start add passkey - get challenge from server
-  const startResponse = await fetch(`${API_BASE_URL}/auth/passkeys/add/start`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${accessToken}`,
-    },
-  })
+  let startResponse: Response
+  try {
+    startResponse = await fetch(`${API_BASE_URL}/auth/passkeys/add/start`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${accessToken}`,
+      },
+    })
+  } catch (error) {
+    throw new Error('Network error: Unable to connect to the server. Please check your internet connection.')
+  }
 
   if (!startResponse.ok) {
-    const error = await startResponse.json()
-    throw new Error(error.message || 'Failed to start passkey addition')
+    throw new Error(await parseApiError(startResponse, 'Failed to start passkey addition'))
   }
 
   const startData: WebAuthnStartResponse = await startResponse.json()
@@ -208,22 +252,26 @@ export async function addPasskey(
   }
 
   // 3. Finish add passkey - send credential to server
-  const finishResponse = await fetch(`${API_BASE_URL}/auth/passkeys/add/finish`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${accessToken}`,
-    },
-    body: JSON.stringify({
-      challengeId: startData.challengeId,
-      credential,
-      passkeyName,
-    }),
-  })
+  let finishResponse: Response
+  try {
+    finishResponse = await fetch(`${API_BASE_URL}/auth/passkeys/add/finish`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${accessToken}`,
+      },
+      body: JSON.stringify({
+        challengeId: startData.challengeId,
+        credential,
+        passkeyName,
+      }),
+    })
+  } catch (error) {
+    throw new Error('Network error: Unable to connect to the server. Please check your internet connection.')
+  }
 
   if (!finishResponse.ok) {
-    const error = await finishResponse.json()
-    throw new Error(error.message || 'Failed to complete passkey addition')
+    throw new Error(await parseApiError(finishResponse, 'Failed to complete passkey addition'))
   }
 
   return finishResponse.json()

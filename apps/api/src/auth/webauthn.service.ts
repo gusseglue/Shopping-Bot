@@ -81,6 +81,7 @@ export class WebAuthnService {
       data: {
         challenge: options.challenge,
         email: dto.email,
+        userName: dto.name,
         type: 'registration',
         expiresAt: challengeExpiry,
       },
@@ -137,7 +138,7 @@ export class WebAuthnService {
     const user = await this.prisma.user.create({
       data: {
         email: challenge.email,
-        name: dto.passkeyName ? undefined : undefined, // Name from challenge not available here
+        name: challenge.userName,
         subscription: {
           create: {
             stripeCustomerId: `cus_${uuidv4().replace(/-/g, '').substring(0, 14)}`,

@@ -127,6 +127,8 @@ For secure auto-updates, Tauri uses its own signing key:
    }
    ```
 
+> **Note**: The updater is disabled by default (`"active": false`) in `tauri.conf.json`. Only enable it after configuring a valid public key. The public key must match the private key used to sign updates.
+
 ## Verifying Signatures
 
 ### Windows

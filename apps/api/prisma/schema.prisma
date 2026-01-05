@@ -249,6 +249,7 @@ model WebAuthnChallenge {
   challenge String   @unique
   userId    String?  @map("user_id") // Null for registration of new users
   email     String?  // Email for new user registration
+  userName  String?  @map("user_name") // Name for new user registration
   type      String   // 'registration' or 'authentication'
   expiresAt DateTime @map("expires_at")
   createdAt DateTime @default(now()) @map("created_at")

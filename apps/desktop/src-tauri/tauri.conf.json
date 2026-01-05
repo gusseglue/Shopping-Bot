@@ -71,7 +71,7 @@
       "iconAsTemplate": true
     },
     "updater": {
-      "active": true,
+      "active": false,
       "endpoints": [
         "https://releases.shoppingassistant.app/{{target}}/{{current_version}}"
       ],
