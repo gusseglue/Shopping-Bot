@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <!-- Allow network access for API calls -->
+    <key>com.apple.security.network.client</key>
+    <true/>
+    
+    <!-- Required for code signing -->
+    <key>com.apple.security.app-sandbox</key>
+    <true/>
+    
+    <!-- Allow access to user-selected files -->
+    <key>com.apple.security.files.user-selected.read-write</key>
+    <true/>
+    
+    <!-- Allow keychain access for secure token storage -->
+    <key>com.apple.security.keychain-access-group</key>
+    <array>
+        <string>$(AppIdentifierPrefix)com.shoppingassistant.app</string>
+    </array>
+    
+    <!-- Allow notifications -->
+    <key>com.apple.security.automation.apple-events</key>
+    <true/>
+</dict>
+</plist>

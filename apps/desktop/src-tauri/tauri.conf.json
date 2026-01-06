@@ -32,7 +32,7 @@
     "bundle": {
       "active": true,
       "category": "DeveloperTool",
-      "copyright": "",
+      "copyright": "Copyright © 2024 Shopping Assistant",
       "deb": {
         "depends": []
       },
@@ -45,32 +45,38 @@
         "icons/icon.ico"
       ],
       "identifier": "com.shoppingassistant.app",
-      "longDescription": "",
+      "longDescription": "Shopping Assistant helps you track product availability, prices, and variants across online stores with real-time notifications.",
       "macOS": {
-        "entitlements": null,
+        "entitlements": "entitlements.plist",
         "exceptionDomain": "",
         "frameworks": [],
         "providerShortName": null,
-        "signingIdentity": null
+        "signingIdentity": "-"
       },
       "resources": [],
-      "shortDescription": "",
+      "shortDescription": "Product monitoring and alerting platform",
       "targets": "all",
       "windows": {
         "certificateThumbprint": null,
         "digestAlgorithm": "sha256",
-        "timestampUrl": ""
+        "timestampUrl": "http://timestamp.digicert.com",
+        "wix": null
       }
     },
     "security": {
-      "csp": null
+      "csp": "default-src 'self'; connect-src 'self' https://*; img-src 'self' data: https:; style-src 'self' 'unsafe-inline'"
     },
     "systemTray": {
       "iconPath": "icons/icon.png",
       "iconAsTemplate": true
     },
     "updater": {
-      "active": false
+      "active": false,
+      "endpoints": [
+        "https://releases.shoppingassistant.app/{{target}}/{{current_version}}"
+      ],
+      "dialog": true,
+      "pubkey": ""
     },
     "windows": [
       {
