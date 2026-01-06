@@ -24,8 +24,8 @@ jobs:
         run: npm install
         working-directory: apps/${{ matrix.app }}
 
-      - name: Generate Prisma Client (API only)
-        if: matrix.app == 'api'
+      - name: Generate Prisma Client (API and Worker)
+        if: matrix.app == 'api' || matrix.app == 'worker'
         run: npx prisma generate
         working-directory: apps/${{ matrix.app }}
 
